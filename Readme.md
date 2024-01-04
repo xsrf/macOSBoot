@@ -5,12 +5,14 @@ This is a simple Docker-Container that contains all the tools required to extrac
 It was successfully testet with:
 - macOS Sierra (10.12)
 - macOS El Capitan (10.11)
+- macOS Yosemite (10.10)
+- macOS Mountain Lion (10.8)
 
 All you need is Docker and a Tool to write an .img file to a USB Stick (like AnyBurn) or DVD. It should work with Windows or Linux, though some batch-files are provided for convenience on Windows.
 
 It uses [xar](https://github.com/mackyle/xar) and 7zip to extract pkg and dmg images and dmg2img to convert the final dmg to img.
 
-The Image we want is burried deep in the Installation image:
+The Image we want is burried deep in the Installation images:
 ```
 InstallOS.dmg (Sierra 10.12)
 └─ 5.hfs (Partition)
@@ -19,19 +21,29 @@ InstallOS.dmg (Sierra 10.12)
          └─ 5.hfs (Partition)
             └─ OS X Install ESD/BaseSystem.dmg
 
-InstallMacOSX.dmg (Lion 10.7 - El Capitan 10.11)
+InstallMacOSX.dmg (El Capitan 10.11)
 └─ 5.hfs (Partition)
    └─ Install OS X/InstallMacOSX.pkg
       └─ InstallMacOSX.pkg/InstallESD.dmg
          └─ 5.hfs (Partition)
             └─ OS X Install ESD/BaseSystem.dmg
+
+InstallMacOSX.dmg (Yosemite 10.10)
+└─ Install OS X/InstallMacOSX.pkg
+   └─ InstallMacOSX.pkg/InstallESD.dmg
+      └─ OS X Install ESD/BaseSystem.dmg
+
+InstallMacOSX.dmg (Mountain Lion 10.8)
+└─ Install Mac OS X/InstallMacOSX.pkg
+   └─ InstallMacOSX.pkg/InstallESD.dmg
+      └─ Mac OS X Install ESD/BaseSystem.dmg
  ```
 
 ## Instructions
 
 1. Build the required Doker-Container by running `docker_build.bat` (Windows) or `./docker_build.sh` (Linux)
 
-1. Download/Copy `InstallOS.dmg` from https://support.apple.com/en-us/102662 into the current directory and make sure it's called `InstallOS.dmg`
+1. Download/Copy `InstallOS.dmg` or `InstallMacOSX.dmg` from https://support.apple.com/en-us/102662 into the current directory and make sure it's called `InstallOS.dmg` or `InstallMacOSX.dmg`
 
 1. Run the Docker container via `docker_run.bat` (Windows) or `./docker_run.sh` (Linux)
 

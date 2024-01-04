@@ -10,15 +10,13 @@ if [ -f "./BaseSystem.img" ]; then
 fi
 
 if [ -f "./InstallOS.dmg" ]; then
-  OSFILE="InstallOS"
-  OSFOLDER="Install macOS"
-  echo "Found $OSFILE.dmg - Installer for Sierra (10.12)";
+  OSFILE="InstallOS.dmg"
+  echo "Found $OSFILE - Installer for Sierra (10.12)";
 fi
 
 if [ -f "./InstallMacOSX.dmg" ]; then
-  OSFILE="InstallMacOSX"
-  OSFOLDER="Install OS X"
-  echo "Found $OSFILE.dmg - Installer for Lion (10.7) - El Capitan (10.11)";
+  OSFILE="InstallMacOSX.dmg"
+  echo "Found $OSFILE - Installer for Lion (10.7) - El Capitan (10.11)";
 fi
 
 if [ -z ${OSFILE+x} ]; then
@@ -26,32 +24,59 @@ if [ -z ${OSFILE+x} ]; then
   exit 0
 fi
 
-# Extract HFS Partition from Apples official InstallOS.dmg ( Download from https://support.apple.com/de-de/102662 )
-7z x $OSFILE.dmg 5.hfs
+if [ $(7z l $OSFILE | grep -c -F 5.hfs) -eq 1 ]; then
+  # Image contains intermediate HFS Partition
+  7z x $OSFILE 5.hfs
+  PKGSRC="5.hfs"
+else
+  PKGSRC=$OSFILE
+fi
 
-# Extract InstallOS.pkg from the HFS Partition
-7z e 5.hfs "${OSFOLDER}/$OSFILE.pkg"
+if [ $(7z l $PKGSRC | grep -c -e "Install.*/.*\.pkg") -eq 1 ]; then
+  # Image contains the pkg
+  PKGFOLDER=$(7z l $PKGSRC | grep -o -e "Install.*/.*\.pkg" | cut -d "/" -f 1)
+  PKGFILE=$(7z l $PKGSRC | grep -o -e "Install.*/.*\.pkg" | cut -d "/" -f 2)
+  7z e $PKGSRC "${PKGFOLDER}/$PKGFILE"
+else
+  7z l $PKGSRC
+  echo "Couldn't find pkg in $PKGSRC"
+  exit 1
+fi
 
-# Cleanup and rename InstallOS.pkg due to naming conflict that would prevent next extraction
-mv $OSFILE.pkg IOS.pkg
-rm 5.hfs
+# Cleanup intermediate HFS
+if [ -f "5.hfs" ]; then
+  rm 5.hfs
+fi
+
+# Rename InstallOS.pkg due to naming conflict that would prevent next extraction
+mv $PKGFILE IOS.pkg
 
 # Extract InstallESD.dmg and move it
-xar -xvf IOS.pkg $OSFILE.pkg/InstallESD.dmg
-mv $OSFILE.pkg/InstallESD.dmg InstallESD.dmg
+xar -xvf IOS.pkg $PKGFILE/InstallESD.dmg
+mv $PKGFILE/InstallESD.dmg InstallESD.dmg
 
 # Cleanup
-rm -r $OSFILE.pkg
+rm -r $PKGFILE
 rm IOS.pkg
 
-# Extract HFS Partition from InstallESD.dmg
-7z x InstallESD.dmg 5.hfs
-rm InstallESD.dmg
+if [ $(7z l InstallESD.dmg | grep -c -F 5.hfs) -eq 1 ]; then
+  # Image contains intermediate HFS Partition
+  7z x InstallESD.dmg 5.hfs
+  rm InstallESD.dmg
+  mv 5.hfs InstallESD.dmg
+fi
 
-# Extract BaseSystem.dmg
-# 7z e 5.hfs "OS X Install ESD/AppleDiagnostics.dmg"
-7z e 5.hfs "OS X Install ESD/BaseSystem.dmg"
-rm 5.hfs
+if [ $(7z l InstallESD.dmg | grep -c -e ".*/BaseSystem.dmg") -eq 1 ]; then
+  # Image contains the dmg
+  PKGFOLDER=$(7z l -slt InstallESD.dmg | grep -e "Path = .*/BaseSystem.dmg" | cut -d "=" -f 2 | xargs | cut -d "/" -f 1)
+  7z e InstallESD.dmg "$PKGFOLDER/BaseSystem.dmg"
+  rm InstallESD.dmg
+else
+  # Could not find
+  7z l InstallESD.dmg
+  echo "Could not find BaseSystem.dmg in InstallESD.dmg"
+  exit 1
+fi
 
 # Convert to BaseSystem.img
 dmg2img BaseSystem.dmg
