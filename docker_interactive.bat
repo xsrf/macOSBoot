@@ -1,0 +1,1 @@
+docker run --rm --workdir /home --volume %cd%:/home -ti --entrypoint bash macosboot:latest

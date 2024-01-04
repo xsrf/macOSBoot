@@ -1,0 +1,1 @@
+docker run --rm --workdir /home --volume %cd%:/home macosboot:latest ./create-image.sh
