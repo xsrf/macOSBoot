@@ -4,6 +4,7 @@ This is a simple Docker-Container that contains all the tools required to extrac
 
 It was successfully testet with:
 - macOS Sierra (10.12)
+- macOS El Capitan (10.11)
 
 All you need is Docker and a Tool to write an .img file to a USB Stick (like AnyBurn) or DVD. It should work with Windows or Linux, though some batch-files are provided for convenience on Windows.
 
@@ -34,7 +35,7 @@ InstallMacOSX.dmg (Lion 10.7 - El Capitan 10.11)
 
 1. Run the Docker container via `docker_run.bat` (Windows) or `./docker_run.sh` (Linux)
 
-*⚠ While the Container is running, it will extract temporary files into the current directory! Make sure you have at least 10GB free space and no other conflicting files in the directory! ⚠*
+*⚠ While the Container is running, it will extract temporary files into the current directory! Make sure you have at least 15GB free space and no other conflicting files in the directory! ⚠*
 
 When it's done, it will leave a `BaseSystem.img` in the current folder you can then write on an USB-Stick or DVD, e.g. using Tools like AnyBurn.
 

@@ -9,27 +9,39 @@ if [ -f "./BaseSystem.img" ]; then
   exit 0
 fi
 
-if ! [ -f "./InstallOS.dmg" ]; then
-  echo "Please place InstallOS.dmg into the current directory!"
+if [ -f "./InstallOS.dmg" ]; then
+  OSFILE="InstallOS"
+  OSFOLDER="Install macOS"
+  echo "Found $OSFILE.dmg - Installer for Sierra (10.12)";
+fi
+
+if [ -f "./InstallMacOSX.dmg" ]; then
+  OSFILE="InstallMacOSX"
+  OSFOLDER="Install OS X"
+  echo "Found $OSFILE.dmg - Installer for Lion (10.7) - El Capitan (10.11)";
+fi
+
+if [ -z ${OSFILE+x} ]; then
+  echo "Please place InstallOS.dmg / InstallMacOSX.dmg into the current directory!"
   exit 0
 fi
 
 # Extract HFS Partition from Apples official InstallOS.dmg ( Download from https://support.apple.com/de-de/102662 )
-7z x InstallOS.dmg 5.hfs
+7z x $OSFILE.dmg 5.hfs
 
 # Extract InstallOS.pkg from the HFS Partition
-7z e 5.hfs "Install macOS/InstallOS.pkg"
+7z e 5.hfs "${OSFOLDER}/$OSFILE.pkg"
 
 # Cleanup and rename InstallOS.pkg due to naming conflict that would prevent next extraction
-mv InstallOS.pkg IOS.pkg
+mv $OSFILE.pkg IOS.pkg
 rm 5.hfs
 
 # Extract InstallESD.dmg and move it
-xar -xvf IOS.pkg InstallOS.pkg/InstallESD.dmg
-mv InstallOS.pkg/InstallESD.dmg InstallESD.dmg
+xar -xvf IOS.pkg $OSFILE.pkg/InstallESD.dmg
+mv $OSFILE.pkg/InstallESD.dmg InstallESD.dmg
 
 # Cleanup
-rm -r InstallOS.pkg
+rm -r $OSFILE.pkg
 rm IOS.pkg
 
 # Extract HFS Partition from InstallESD.dmg
